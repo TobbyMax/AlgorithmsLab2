@@ -7,6 +7,8 @@
 
 #include "point.h"
 
+using ui = unsigned int;
+
 struct Rectangle {
     Point start;
     Point finish;
@@ -18,4 +20,14 @@ struct Rectangle {
     Rectangle(Rectangle const &r) : start(r.start), finish(r.finish) {}
 };
 
+std::vector<Rectangle> scanRectangles(ui n) {
+    std::vector<Rectangle> rectangles(n);
+
+    for (auto& r : rectangles) {
+        int x1, y1, x2, y2;
+        std::cin >> x1 >> y1 >> x2 >> y2;
+        r = Rectangle{x1, y1, x2, y2};
+    }
+    return rectangles;
+}
 #endif //ALGOLAB2_RECTANGLE_H

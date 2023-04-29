@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include "point.h"
 #include "rectangle.h"
 
@@ -14,7 +15,7 @@ using ui = unsigned int;
 
 class ExhaustiveSearch {
 private:
-    std::vector<Rectangle>& rectangles;
+    std::vector<Rectangle> rectangles;
 public:
     void prepareRectangles(const std::vector<Rectangle>& _rectangles) {
         this->rectangles = _rectangles;
@@ -33,7 +34,7 @@ public:
         for (auto& res : results) {
             Point p;
             std::cin >> p.x >> p.y;
-            res = findRectangleCrossing(rectangles, p);
+            res = findRectangleCrossing(p);
         }
         return results;
     }
