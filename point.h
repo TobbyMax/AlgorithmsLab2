@@ -8,8 +8,6 @@
 #include <iostream>
 #include <vector>
 
-using ui = unsigned int;
-
 struct Point {
     int x;
     int y;
@@ -27,7 +25,7 @@ std::istream& operator>>(std::istream &in, Point &p) {
     return in >> p.x >> p.y;
 }
 
-std::vector<Point> scanPoints(ui n) {
+std::vector<Point> scanPoints(unsigned int n) {
     std::vector<Point> points(n);
     for (auto &p: points) {
         std::cin >> p;

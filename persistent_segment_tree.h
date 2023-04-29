@@ -13,14 +13,13 @@
 #include <memory>
 #include "rectangle.h"
 
-using ui = unsigned int;
 
 class PersistentSegmentTree {
 private:
     struct Node;
 
-    std::vector<int> xCompressed;
-    std::vector<int> yCompressed;
+    std::vector<int> xUnique;
+    std::vector<int> yUnique;
     std::vector<std::shared_ptr<Node>> states;
 
     struct RectangleModifier {
@@ -43,13 +42,13 @@ private:
     };
 
     struct Node {
-        ui modifier;
-        ui leftBound;
-        ui rightBound;
+        unsigned int modifier;
+        unsigned int leftBound;
+        unsigned int rightBound;
         std::shared_ptr<Node> left;
         std::shared_ptr<Node> right;
 
-        Node(ui l, ui r) : leftBound(l), rightBound(r) {
+        Node(unsigned int l, unsigned int r) : leftBound(l), rightBound(r) {
             modifier = 0;
             left = nullptr;
             right = nullptr;
@@ -64,12 +63,12 @@ private:
         }
     };
 
-    std::shared_ptr<Node> createTree(ui l, ui r) {
+    std::shared_ptr<Node> createTree(unsigned int l, unsigned int r) {
         auto root = std::make_shared<Node>(l, r);
         if (l == r) {
             return root;
         }
-        ui mid = (l + r) / 2;
+        unsigned int mid = (l + r) / 2;
         root->left = createTree(l, mid);
         root->right = createTree(mid + 1, r);
         return root;
@@ -91,8 +90,8 @@ private:
         }
     }
 
-    ui get(const std::shared_ptr<Node> &cur, long long j) {
-        ui sum = 0;
+    unsigned int get(const std::shared_ptr<Node> &cur, long long j) {
+        unsigned int sum = 0;
         if (cur->right != nullptr && cur->right->leftBound <= j) {
             sum += get(cur->right, j);
         } else if (cur->left != nullptr && cur->left->rightBound >= j) {
@@ -108,12 +107,12 @@ private:
 
     Point compressRectanglePoint(const Point &p) {
         Point mapped;
-        mapped.x = compressCoordinate(xCompressed, p.x);
-        mapped.y = compressCoordinate(yCompressed, p.y);
+        mapped.x = compressCoordinate(xUnique, p.x);
+        mapped.y = compressCoordinate(yUnique, p.y);
         return mapped;
     }
 
-    void compressCoordinates(const std::vector<Rectangle> &rectangles) {
+    void getUniqueCoordinates(const std::vector<Rectangle> &rectangles) {
         std::set<int> x_set;
         std::set<int> y_set;
 
@@ -123,10 +122,10 @@ private:
             x_set.insert(r.finish.x);
             y_set.insert(r.finish.y);
         }
-        xCompressed = std::vector<int>();
-        xCompressed.insert(xCompressed.begin(), x_set.begin(), x_set.end());
-        yCompressed = std::vector<int>();
-        yCompressed.insert(yCompressed.begin(), y_set.begin(), y_set.end());
+        xUnique = std::vector<int>();
+        xUnique.insert(xUnique.begin(), x_set.begin(), x_set.end());
+        yUnique = std::vector<int>();
+        yUnique.insert(yUnique.begin(), y_set.begin(), y_set.end());
     }
 
     std::vector<RectangleModifier> getRectangleModifiers(const std::vector<Rectangle> &rectangles) {
@@ -146,15 +145,15 @@ private:
     void getTreeStates(const std::vector<Rectangle> &rectangles) {
         std::vector<RectangleModifier> modifiers = getRectangleModifiers(rectangles);
 
-        states = std::vector<std::shared_ptr<Node>>(xCompressed.size());
+        states = std::vector<std::shared_ptr<Node>>(xUnique.size());
         std::shared_ptr<Node> initState;
-        if (yCompressed.empty()) {
+        if (yUnique.empty()) {
             initState = nullptr;
         } else {
-            initState = createTree(0, yCompressed.size() - 1);
+            initState = createTree(0, yUnique.size() - 1);
         }
-        ui modifierIndex = 0, stateIndex = 0;
-        for (int x = 0; x < xCompressed.size(); ++x) {
+        unsigned int modifierIndex = 0, stateIndex = 0;
+        for (int x = 0; x < xUnique.size(); ++x) {
             std::shared_ptr<Node> curState;
             if (stateIndex == 0) {
                 curState = initState;
@@ -172,26 +171,26 @@ private:
 
 public:
     void prepareRectangles(const std::vector<Rectangle> &rectangles) {
-        compressCoordinates(rectangles);
+        getUniqueCoordinates(rectangles);
         getTreeStates(rectangles);
     }
 
-    ui findRectangleCrossing(const Point &p) {
-        auto pos_x = std::upper_bound(xCompressed.begin(), xCompressed.end(), p.x);
-        if (pos_x == xCompressed.end() || pos_x == xCompressed.begin()) {
+    unsigned int findRectangleCrossing(const Point &p) {
+        auto pos_x = std::upper_bound(xUnique.begin(), xUnique.end(), p.x);
+        if (pos_x == xUnique.end() || pos_x == xUnique.begin()) {
             return 0;
         }
-        auto pos_y = std::upper_bound(yCompressed.begin(), yCompressed.end(), p.y);
-        if (pos_y == yCompressed.end() || pos_y == yCompressed.begin()) {
+        auto pos_y = std::upper_bound(yUnique.begin(), yUnique.end(), p.y);
+        if (pos_y == yUnique.end() || pos_y == yUnique.begin()) {
             return 0;
         }
-        auto y = pos_y - yCompressed.begin() - 1;
-        auto x = pos_x - xCompressed.begin() - 1;
+        auto y = pos_y - yUnique.begin() - 1;
+        auto x = pos_x - xUnique.begin() - 1;
         return get(states[x], y);
     }
 
-    std::vector<ui> getResults(std::vector<Point> points) {
-        std::vector<ui> results(points.size());
+    std::vector<unsigned int> getResults(std::vector<Point> points) {
+        std::vector<unsigned int> results(points.size());
         for (int i = 0; i < points.size(); ++i) {
             results[i] = findRectangleCrossing(points[i]);
         }

@@ -13,13 +13,11 @@
 #include <algorithm>
 #include "rectangle.h"
 
-using ui = unsigned int;
-
 class RectangleMap {
 private:
-    std::vector<std::vector<ui>> rectangleMap;
-    std::vector<int> xCompressed;
-    std::vector<int> yCompressed;
+    std::vector<std::vector<unsigned int>> rectangleMap;
+    std::vector<int> xUnique;
+    std::vector<int> yUnique;
 
     static int compressCoordinate(const std::vector<int> &compressed, int coordinate) {
         return (int) (std::lower_bound(compressed.begin(), compressed.end(), coordinate) - compressed.begin());
@@ -27,15 +25,15 @@ private:
 
     Point compressRectanglePoint(const Point &p) {
         Point mapped;
-        mapped.x = compressCoordinate(xCompressed, p.x);
-        mapped.y = compressCoordinate(yCompressed, p.y);
+        mapped.x = compressCoordinate(xUnique, p.x);
+        mapped.y = compressCoordinate(yUnique, p.y);
         return mapped;
     }
 
     void mapRectangles(const std::vector<Rectangle> &rectangles) {
-        rectangleMap = std::vector<std::vector<ui>>(yCompressed.size());
+        rectangleMap = std::vector<std::vector<unsigned int>>(yUnique.size());
         for (auto &row: rectangleMap) {
-            row = std::vector<ui>(xCompressed.size());
+            row = std::vector<unsigned int>(xUnique.size());
         }
         for (auto &r: rectangles) {
             Point start = compressRectanglePoint(r.start);
@@ -49,7 +47,7 @@ private:
         }
     }
 
-    void compressCoordinates(const std::vector<Rectangle> &rectangles) {
+    void getUniqueCoordinates(const std::vector<Rectangle> &rectangles) {
         std::set<int> x_set;
         std::set<int> y_set;
 
@@ -59,34 +57,34 @@ private:
             x_set.insert(r.finish.x);
             y_set.insert(r.finish.y);
         }
-        xCompressed = std::vector<int>();
-        xCompressed.insert(xCompressed.begin(), x_set.begin(), x_set.end());
-        yCompressed = std::vector<int>();
-        yCompressed.insert(yCompressed.begin(), y_set.begin(), y_set.end());
+        xUnique = std::vector<int>();
+        xUnique.insert(xUnique.begin(), x_set.begin(), x_set.end());
+        yUnique = std::vector<int>();
+        yUnique.insert(yUnique.begin(), y_set.begin(), y_set.end());
     }
 
 public:
     void prepareRectangles(const std::vector<Rectangle> &rectangles) {
-        compressCoordinates(rectangles);
+        getUniqueCoordinates(rectangles);
         mapRectangles(rectangles);
     }
 
-    ui findRectangleCrossing(const Point &p) {
-        auto pos_x = std::upper_bound(xCompressed.begin(), xCompressed.end(), p.x);
-        if (pos_x == xCompressed.end() || pos_x == xCompressed.begin()) {
+    unsigned int findRectangleCrossing(const Point &p) {
+        auto pos_x = std::upper_bound(xUnique.begin(), xUnique.end(), p.x);
+        if (pos_x == xUnique.end() || pos_x == xUnique.begin()) {
             return 0;
         }
-        auto pos_y = std::upper_bound(yCompressed.begin(), yCompressed.end(), p.y);
-        if (pos_y == yCompressed.end() || pos_y == yCompressed.begin()) {
+        auto pos_y = std::upper_bound(yUnique.begin(), yUnique.end(), p.y);
+        if (pos_y == yUnique.end() || pos_y == yUnique.begin()) {
             return 0;
         }
-        auto y = pos_y - yCompressed.begin() - 1;
-        auto x = pos_x - xCompressed.begin() - 1;
+        auto y = pos_y - yUnique.begin() - 1;
+        auto x = pos_x - xUnique.begin() - 1;
         return rectangleMap[y][x];
     }
 
-    std::vector<ui> getResults(std::vector<Point> points) {
-        std::vector<ui> results(points.size());
+    std::vector<unsigned int> getResults(std::vector<Point> points) {
+        std::vector<unsigned int> results(points.size());
         for (int i = 0; i < points.size(); ++i) {
             results[i] = findRectangleCrossing(points[i]);
         }

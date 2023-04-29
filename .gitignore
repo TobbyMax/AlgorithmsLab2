@@ -128,3 +128,5 @@ compile_commands.json
 CTestTestfile.cmake
 
 
+/find_results.txt
+/prep_results.txt

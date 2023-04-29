@@ -11,8 +11,6 @@
 #include "point.h"
 #include "rectangle.h"
 
-using ui = unsigned int;
-
 class ExhaustiveSearch {
 private:
     std::vector<Rectangle> rectangles;
@@ -21,18 +19,19 @@ public:
         this->rectangles = _rectangles;
     }
 
-    ui findRectangleCrossing(const Point &p) {
-        ui result = 0;
+    unsigned int findRectangleCrossing(const Point &p) {
+        unsigned int result = 0;
         for (const auto &rect: rectangles) {
-            if (rect.start.x <= p.x && rect.start.y <= p.y && rect.finish.x > p.x && rect.finish.y > p.y) {
+            if (rect.start.x <= p.x && rect.start.y <= p.y &&
+                rect.finish.x > p.x && rect.finish.y > p.y) {
                 result++;
             }
         }
         return result;
     }
 
-    std::vector<ui> getResults(std::vector<Point> points) {
-        std::vector<ui> results(points.size());
+    std::vector<unsigned int> getResults(std::vector<Point> points) {
+        std::vector<unsigned int> results(points.size());
         for (int i = 0; i < points.size(); ++i) {
             results[i] = findRectangleCrossing(points[i]);
         }

@@ -7,8 +7,6 @@
 
 #include "point.h"
 
-using ui = unsigned int;
-
 struct Rectangle {
     Point start;
     Point finish;
@@ -28,7 +26,7 @@ std::istream& operator>>(std::istream &in, Rectangle &r) {
     return in >> r.start >> r.finish;
 }
 
-std::vector<Rectangle> scanRectangles(ui n) {
+std::vector<Rectangle> scanRectangles(unsigned int n) {
     std::vector<Rectangle> rectangles(n);
     for (auto &r: rectangles) {
         std::cin >> r;
