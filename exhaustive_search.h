@@ -31,12 +31,10 @@ public:
         return result;
     }
 
-    std::vector<ui> getResults(int m) {
-        std::vector<ui> results(m);
-        for (auto &res: results) {
-            Point p;
-            std::cin >> p.x >> p.y;
-            res = findRectangleCrossing(p);
+    std::vector<ui> getResults(std::vector<Point> points) {
+        std::vector<ui> results(points.size());
+        for (int i = 0; i < points.size(); ++i) {
+            results[i] = findRectangleCrossing(points[i]);
         }
         return results;
     }

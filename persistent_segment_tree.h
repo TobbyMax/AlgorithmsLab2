@@ -62,33 +62,6 @@ private:
             left = node.left;
             right = node.right;
         }
-
-        std::shared_ptr<Node> modify(const std::shared_ptr<Node> &cur, int l, int r, int mod) {
-            if (leftBound >= r || rightBound < l) {
-                return cur;
-            }
-            if (leftBound >= l && rightBound < r) {
-                auto newRoot = std::make_shared<Node>(*cur);
-                newRoot->modifier += mod;
-                return newRoot;
-            } else {
-                auto newRoot = std::make_shared<Node>(*cur);
-                newRoot->left = left->modify(left, l, r, mod);
-                newRoot->right = right->modify(right, l, r, mod);
-                return newRoot;
-            }
-        }
-
-        ui get(long long j) {
-            ui sum = 0;
-            if (right != nullptr && right->leftBound <= j) {
-                sum += right->get(j);
-            } else if (left != nullptr && left->rightBound >= j) {
-                sum += left->get(j);
-            }
-            sum += modifier;
-            return sum;
-        }
     };
 
     std::shared_ptr<Node> createTree(ui l, ui r) {
@@ -102,7 +75,34 @@ private:
         return root;
     }
 
-    static int compressCoordinate(const std::vector<int>& compressed, int coordinate) {
+    std::shared_ptr<Node> modify(const std::shared_ptr<Node> &cur, int l, int r, int mod) {
+        if (cur->leftBound >= r || cur->rightBound < l) {
+            return cur;
+        }
+        if (cur->leftBound >= l && cur->rightBound < r) {
+            auto newRoot = std::make_shared<Node>(*cur);
+            newRoot->modifier += mod;
+            return newRoot;
+        } else {
+            auto newRoot = std::make_shared<Node>(*cur);
+            newRoot->left = modify(cur->left, l, r, mod);
+            newRoot->right = modify(cur->right, l, r, mod);
+            return newRoot;
+        }
+    }
+
+    ui get(const std::shared_ptr<Node> &cur, long long j) {
+        ui sum = 0;
+        if (cur->right != nullptr && cur->right->leftBound <= j) {
+            sum += get(cur->right, j);
+        } else if (cur->left != nullptr && cur->left->rightBound >= j) {
+            sum += get(cur->left, j);
+        }
+        sum += cur->modifier;
+        return sum;
+    }
+
+    static int compressCoordinate(const std::vector<int> &compressed, int coordinate) {
         return (int) (std::lower_bound(compressed.begin(), compressed.end(), coordinate) - compressed.begin());
     }
 
@@ -162,8 +162,8 @@ private:
                 curState = states[stateIndex - 1];
             }
             while (modifiers[modifierIndex].x == x) {
-                curState = curState->modify(curState, modifiers[modifierIndex].y1,
-                                            modifiers[modifierIndex].y2, modifiers[modifierIndex].modifier);
+                curState = modify(curState, modifiers[modifierIndex].y1,
+                                  modifiers[modifierIndex].y2, modifiers[modifierIndex].modifier);
                 modifierIndex++;
             }
             states[stateIndex++] = curState;
@@ -187,15 +187,13 @@ public:
         }
         auto y = pos_y - yCompressed.begin() - 1;
         auto x = pos_x - xCompressed.begin() - 1;
-        return states[x]->get(y);
+        return get(states[x], y);
     }
 
-    std::vector<ui> getResults(int m) {
-        std::vector<ui> results(m);
-        for (auto &res: results) {
-            Point p;
-            std::cin >> p.x >> p.y;
-            res = findRectangleCrossing(p);
+    std::vector<ui> getResults(std::vector<Point> points) {
+        std::vector<ui> results(points.size());
+        for (int i = 0; i < points.size(); ++i) {
+            results[i] = findRectangleCrossing(points[i]);
         }
         return results;
     }

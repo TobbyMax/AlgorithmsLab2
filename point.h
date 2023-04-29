@@ -5,6 +5,7 @@
 #ifndef ALGOLAB2_POINT_H
 #define ALGOLAB2_POINT_H
 
+using ui = unsigned int;
 
 struct Point {
     int x;
@@ -19,5 +20,16 @@ struct Point {
     Point(Point const &p) : Point(p.x, p.y) {}
 };
 
+std::istream& operator>>(std::istream &in, Point &p) {
+    return in >> p.x >> p.y;
+}
+
+std::vector<Point> scanPoints(ui n) {
+    std::vector<Point> points(n);
+    for (auto &p: points) {
+        std::cin >> p;
+    }
+    return points;
+}
 
 #endif //ALGOLAB2_POINT_H

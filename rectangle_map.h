@@ -21,7 +21,7 @@ private:
     std::vector<int> xCompressed;
     std::vector<int> yCompressed;
 
-    static int compressCoordinate(const std::vector<int>& compressed, int coordinate) {
+    static int compressCoordinate(const std::vector<int> &compressed, int coordinate) {
         return (int) (std::lower_bound(compressed.begin(), compressed.end(), coordinate) - compressed.begin());
     }
 
@@ -85,12 +85,10 @@ public:
         return rectangleMap[y][x];
     }
 
-    std::vector<ui> getResults(int m) {
-        std::vector<ui> results(m);
-        for (auto &res: results) {
-            Point p;
-            std::cin >> p.x >> p.y;
-            res = findRectangleCrossing(p);
+    std::vector<ui> getResults(std::vector<Point> points) {
+        std::vector<ui> results(points.size());
+        for (int i = 0; i < points.size(); ++i) {
+            results[i] = findRectangleCrossing(points[i]);
         }
         return results;
     }

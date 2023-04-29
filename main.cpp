@@ -15,11 +15,13 @@ int main() {
     auto solver = PersistentSegmentTree();
     int n;
     std::cin >> n;
-    std::vector<Rectangle> rectangles = scanRectangles(n);
+    auto rectangles = scanRectangles(n);
     solver.prepareRectangles(rectangles);
+
     int m;
     std::cin >> m;
-    auto results = solver.getResults(m);
+    auto points = scanPoints(m);
+    auto results = solver.getResults(points);
     printResults(results);
     return 0;
 }
