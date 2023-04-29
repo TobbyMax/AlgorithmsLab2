@@ -23,6 +23,25 @@ private:
     std::vector<int> yCompressed;
     std::vector<std::shared_ptr<Node>> states;
 
+    struct RectangleModifier {
+        int x, y1, y2;
+        int modifier;
+
+        RectangleModifier() : x(0), y1(0), y2(0), modifier(0) {}
+
+        RectangleModifier(int _x, int _y1, int _y2, int mod) : x(_x), y1(_y1), y2(_y2), modifier(mod) {}
+    };
+
+    class ModifierComparator {
+    public:
+        bool operator()(RectangleModifier rm1, RectangleModifier rm2) {
+            if (rm1.x == rm2.x) {
+                return rm1.modifier < rm2.modifier;
+            }
+            return rm1.x < rm2.x;
+        }
+    };
+
     struct Node {
         ui modifier;
         ui leftBound;
@@ -30,19 +49,21 @@ private:
         std::shared_ptr<Node> left;
         std::shared_ptr<Node> right;
 
-        Node(ui l, ui r) : leftBound(l), rightBound(r){
+        Node(ui l, ui r) : leftBound(l), rightBound(r) {
             modifier = 0;
             left = nullptr;
             right = nullptr;
         }
+
         Node() : Node(0, 0) {}
+
         Node(Node const &node) : Node(node.leftBound, node.rightBound) {
             modifier = node.modifier;
             left = node.left;
             right = node.right;
         }
 
-        std::shared_ptr<Node> modify(std::shared_ptr<Node>& cur, int l, int r, int mod) {
+        std::shared_ptr<Node> modify(const std::shared_ptr<Node> &cur, int l, int r, int mod) {
             if (leftBound >= r || rightBound < l) {
                 return cur;
             }
@@ -62,13 +83,14 @@ private:
             ui sum = 0;
             if (right != nullptr && right->leftBound <= j) {
                 sum += right->get(j);
-            } else if (left != nullptr && left->rightBound >= j){
+            } else if (left != nullptr && left->rightBound >= j) {
                 sum += left->get(j);
             }
             sum += modifier;
             return sum;
         }
     };
+
     std::shared_ptr<Node> createTree(ui l, ui r) {
         auto root = std::make_shared<Node>(l, r);
         if (l == r) {
@@ -80,85 +102,81 @@ private:
         return root;
     }
 
-public:
-    struct RectangleModifier {
-        int x, y1, y2;
-        int modifier;
-        RectangleModifier() : x(0), y1(0), y2(0), modifier(0) {}
-        RectangleModifier(int _x, int _y1, int _y2, int mod) : x(_x), y1(_y1), y2(_y2), modifier(mod) {}
-    };
-    class Comparator {
-    public:
-        bool operator() (RectangleModifier rm1, RectangleModifier rm2) {
-            if (rm1.x == rm2.x) {
-                return rm1.modifier < rm2.modifier;
-            }
-            return rm1.x < rm2.x;
-        }
-    };
+    static int compressCoordinate(const std::vector<int>& compressed, int coordinate) {
+        return (int) (std::lower_bound(compressed.begin(), compressed.end(), coordinate) - compressed.begin());
+    }
 
-    void prepareRectangles(const std::vector<Rectangle>& rectangles) {
+    Point compressRectanglePoint(const Point &p) {
+        Point mapped;
+        mapped.x = compressCoordinate(xCompressed, p.x);
+        mapped.y = compressCoordinate(yCompressed, p.y);
+        return mapped;
+    }
+
+    void compressCoordinates(const std::vector<Rectangle> &rectangles) {
         std::set<int> x_set;
         std::set<int> y_set;
 
-        for (const auto& r : rectangles) {
+        for (const auto &r: rectangles) {
             x_set.insert(r.start.x);
             y_set.insert(r.start.y);
             x_set.insert(r.finish.x);
             y_set.insert(r.finish.y);
         }
-        xCompressed = std::vector<int>(x_set.size());
-        int i = 0;
-        for (auto x : x_set) {
-            xCompressed[i++] = x;
-        }
-        yCompressed = std::vector<int>(y_set.size());
-        i = 0;
-        for (auto y : y_set) {
-            yCompressed[i++] = y;
-        }
+        xCompressed = std::vector<int>();
+        xCompressed.insert(xCompressed.begin(), x_set.begin(), x_set.end());
+        yCompressed = std::vector<int>();
+        yCompressed.insert(yCompressed.begin(), y_set.begin(), y_set.end());
+    }
+
+    std::vector<RectangleModifier> getRectangleModifiers(const std::vector<Rectangle> &rectangles) {
         std::vector<RectangleModifier> modifiers(rectangles.size() * 2);
-        i = 0;
-        for (const auto& r : rectangles) {
-            Point start, finish;
-            start.x = (int)(std::lower_bound(xCompressed.begin(), xCompressed.end(), r.start.x) - xCompressed.begin());
-            start.y = (int)(std::lower_bound(yCompressed.begin(), yCompressed.end(), r.start.y) - yCompressed.begin());
-            finish.x = (int)(std::lower_bound(xCompressed.begin(), xCompressed.end(), r.finish.x) - xCompressed.begin());
-            finish.y = (int)(std::lower_bound(yCompressed.begin(), yCompressed.end(), r.finish.y) - yCompressed.begin());
-            modifiers[2*i] = RectangleModifier(start.x, start.y, finish.y, 1);
-            modifiers[2*i + 1] = RectangleModifier(finish.x, start.y, finish.y, -1);
+        int i = 0;
+        for (const auto &r: rectangles) {
+            Point start = compressRectanglePoint(r.start);
+            Point finish = compressRectanglePoint(r.finish);
+            modifiers[2 * i] = RectangleModifier(start.x, start.y, finish.y, 1);
+            modifiers[2 * i + 1] = RectangleModifier(finish.x, start.y, finish.y, -1);
             i++;
         }
+        std::sort(modifiers.begin(), modifiers.end(), ModifierComparator());
+        return modifiers;
+    }
 
-        std::sort(modifiers.begin(), modifiers.end(), Comparator());
-        states = std::vector<std::shared_ptr<Node>>(x_set.size());
+    void getTreeStates(const std::vector<Rectangle> &rectangles) {
+        std::vector<RectangleModifier> modifiers = getRectangleModifiers(rectangles);
+
+        states = std::vector<std::shared_ptr<Node>>(xCompressed.size());
         std::shared_ptr<Node> initState;
-        if (y_set.empty()){
+        if (yCompressed.empty()) {
             initState = nullptr;
+        } else {
+            initState = createTree(0, yCompressed.size() - 1);
         }
-        else {
-            initState = createTree(0, y_set.size() - 1);
-        }
-        int j = 0;
-        ui index = 0;
+        ui modifierIndex = 0, stateIndex = 0;
         for (int x = 0; x < xCompressed.size(); ++x) {
             std::shared_ptr<Node> curState;
-            if (j == 0) {
+            if (stateIndex == 0) {
                 curState = initState;
             } else {
-                curState = states[j - 1];
+                curState = states[stateIndex - 1];
             }
-
-            while (modifiers[index].x == x) {
-                curState = std::shared_ptr<Node>(curState->modify(curState, modifiers[index].y1, modifiers[index].y2, modifiers[index].modifier));
-                index++;
+            while (modifiers[modifierIndex].x == x) {
+                curState = curState->modify(curState, modifiers[modifierIndex].y1,
+                                            modifiers[modifierIndex].y2, modifiers[modifierIndex].modifier);
+                modifierIndex++;
             }
-            states[j] = curState;
-            j++;
+            states[stateIndex++] = curState;
         }
     }
 
-    ui findRectangleCrossing(const Point& p) {
+public:
+    void prepareRectangles(const std::vector<Rectangle> &rectangles) {
+        compressCoordinates(rectangles);
+        getTreeStates(rectangles);
+    }
+
+    ui findRectangleCrossing(const Point &p) {
         auto pos_x = std::upper_bound(xCompressed.begin(), xCompressed.end(), p.x);
         if (pos_x == xCompressed.end() || pos_x == xCompressed.begin()) {
             return 0;
@@ -174,7 +192,7 @@ public:
 
     std::vector<ui> getResults(int m) {
         std::vector<ui> results(m);
-        for (auto& res : results) {
+        for (auto &res: results) {
             Point p;
             std::cin >> p.x >> p.y;
             res = findRectangleCrossing(p);

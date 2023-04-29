@@ -17,21 +17,23 @@ class ExhaustiveSearch {
 private:
     std::vector<Rectangle> rectangles;
 public:
-    void prepareRectangles(const std::vector<Rectangle>& _rectangles) {
+    void prepareRectangles(const std::vector<Rectangle> &_rectangles) {
         this->rectangles = _rectangles;
     }
-    ui findRectangleCrossing(const Point& p) {
+
+    ui findRectangleCrossing(const Point &p) {
         ui result = 0;
-        for (const auto& rect : rectangles) {
+        for (const auto &rect: rectangles) {
             if (rect.start.x <= p.x && rect.start.y <= p.y && rect.finish.x > p.x && rect.finish.y > p.y) {
                 result++;
             }
         }
         return result;
     }
+
     std::vector<ui> getResults(int m) {
         std::vector<ui> results(m);
-        for (auto& res : results) {
+        for (auto &res: results) {
             Point p;
             std::cin >> p.x >> p.y;
             res = findRectangleCrossing(p);
