@@ -5,6 +5,9 @@
 #ifndef ALGOLAB2_POINT_H
 #define ALGOLAB2_POINT_H
 
+#include <iostream>
+#include <vector>
+
 using ui = unsigned int;
 
 struct Point {
