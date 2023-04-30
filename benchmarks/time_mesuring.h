@@ -17,7 +17,7 @@
 
 #define FIXED 1000
 #define TESTS_COUNT 10
-#define MAX_N 512
+#define MAX_N 512*512
 
 enum Algorithm {Exhaustive_Search,	Rectangle_Map,	Persistent_Segment_Tree};
 
@@ -34,11 +34,11 @@ void bench() {
     auto rectMap = RectangleMap();
     auto fullSearch = ExhaustiveSearch();
 
-    std::ofstream prepResults("..\\prep_results.txt");
-    std::ofstream findResults("..\\find_results.txt");
-    std::ofstream findFixedResults("..\\find_fixed_results.txt");
-    std::ofstream sumResults("..\\sum_results.txt");
-    std::ofstream sumFixedResults("..\\sum_fixed_results.txt");
+    std::ofstream prepResults("..\\data\\raw_results\\prep_results.txt");
+    std::ofstream findResults("..\\data\\raw_results\\find_results.txt");
+    std::ofstream findFixedResults("..\\data\\raw_results\\find_fixed_results.txt");
+    std::ofstream sumResults("..\\data\\raw_results\\sum_results.txt");
+    std::ofstream sumFixedResults("..\\data\\raw_results\\sum_fixed_results.txt");
 
     prepResults << "n\tExhaustiveSearch\tRectangleMap\tPersistentSegmentTree\n";
     findResults << "n\tExhaustiveSearch\tRectangleMap\tPersistentSegmentTree\n";

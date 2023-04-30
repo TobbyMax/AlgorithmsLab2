@@ -14,6 +14,7 @@ int main() {
 #ifdef CONTEST
 
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include "solvers/persistent_segment_tree.h"
 #include "solvers/exhaustive_search.h"
