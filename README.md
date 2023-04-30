@@ -2,7 +2,7 @@
 
 Работу выполнил [Максим Агеев](https://t.me/maxveega)
 
-[Ссылка на репозиторий в GitHub](https://github.com/TobbyMax/algolab1)
+[Ссылка на репозиторий в GitHub](https://github.com/TobbyMax/AlgorithmsLab2)
 
 #### Проходил контест c почты maageev_1@edu.hse.ru
 *(Последнее решение прошедшее контест - третий алгоритм, представленный в лабораторной)*
