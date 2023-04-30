@@ -130,3 +130,6 @@ CTestTestfile.cmake
 
 /find_results.txt
 /prep_results.txt
+/find_fixed_results.txt
+/sum_fixed_results.txt
+/sum_results.txt
